@@ -1,0 +1,15 @@
+{
+  "task": "classification",
+  "max_seq_len": 300,
+  "model": "transformer",
+  "freeze": false,
+  "output_dir": "/home/tim/IM/data/mvts_transformer_experiments",
+  "name": "First Try",
+  "data_dir": "/home/tim/IM/data/ts_files",
+  "pattern": "VAL",
+  "val_pattern": "TEST",
+  "key_metric": "accuracy",
+  "data_class": "tsra",
+  "val_ratio": 0,
+  "epochs": 1
+}
