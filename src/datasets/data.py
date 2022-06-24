@@ -1,17 +1,13 @@
-from typing import Optional
-import os
-from multiprocessing import Pool, cpu_count
 import glob
-import re
 import logging
-from itertools import repeat, chain
+import os
+import re
+from multiprocessing import Pool, cpu_count
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
-from sktime.utils import load_data
 
-from datasets import utils
+from mvts_transformer.src.datasets import utils
 
 logger = logging.getLogger('__main__')
 
@@ -109,14 +105,16 @@ class WeldData(BaseData):
             (Moreover, script argument overrides this attribute)
     """
 
-    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None, config=None):
+    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None,
+                 config=None):
 
         self.set_num_processes(n_proc=n_proc)
 
         self.all_df = self.load_all(root_dir, file_list=file_list, pattern=pattern)
         self.all_df = self.all_df.sort_values(by=['weld_record_index'])  # datasets is presorted
         # TODO: There is a single ID that causes the model output to become nan - not clear why
-        self.all_df = self.all_df[self.all_df['weld_record_index'] != 920397]  # exclude particular ID
+        self.all_df = self.all_df[
+            self.all_df['weld_record_index'] != 920397]  # exclude particular ID
         self.all_df = self.all_df.set_index('weld_record_index')
         self.all_IDs = self.all_df.index.unique()  # all sample (session) IDs
         self.max_seq_len = 66
@@ -165,7 +163,9 @@ class WeldData(BaseData):
         if self.n_proc > 1:
             # Load in parallel
             _n_proc = min(self.n_proc, len(input_paths))  # no more than file_names needed here
-            logger.info("Loading {} datasets files using {} parallel processes ...".format(len(input_paths), _n_proc))
+            logger.info(
+                "Loading {} datasets files using {} parallel processes ...".format(len(input_paths),
+                                                                                   _n_proc))
             with Pool(processes=_n_proc) as pool:
                 all_df = pd.concat(pool.map(WeldData.load_single, input_paths))
         else:  # read 1 file at a time
@@ -200,7 +200,8 @@ class WeldData(BaseData):
         df.loc[is_error, 'power'] = df.loc[is_error, 'true_energy'] / df['diff_time'].median()
 
         df['weld_record_index'] = df['weld_record_index'].astype(int)
-        keep_cols = ['weld_record_index', 'wire_feed_speed', 'current', 'voltage', 'motor_current', 'power']
+        keep_cols = ['weld_record_index', 'wire_feed_speed', 'current', 'voltage', 'motor_current',
+                     'power']
         df = df[keep_cols]
 
         return df
@@ -222,9 +223,10 @@ class TSRegressionArchive(BaseData):
             (Moreover, script argument overrides this attribute)
     """
 
-    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None, config=None):
+    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None,
+                 config=None):
 
-        #self.set_num_processes(n_proc=n_proc)
+        # self.set_num_processes(n_proc=n_proc)
 
         self.config = config
 
@@ -283,50 +285,58 @@ class TSRegressionArchive(BaseData):
         # Every row of the returned df corresponds to a sample;
         # every column is a pd.Series indexed by timestamp and corresponds to a different dimension (feature)
         if self.config['task'] == 'regression':
-            df, labels = utils.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True, replace_missing_vals_with='NaN')
+            df, labels = utils.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
+                                                             replace_missing_vals_with='NaN')
             labels_df = pd.DataFrame(labels, dtype=np.float32)
         elif self.config['task'] == 'classification':
-            df, labels = load_data.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True, replace_missing_vals_with='NaN')
+            df, labels = utils.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
+                                                             replace_missing_vals_with='NaN')
             labels = pd.Series(labels, dtype="category")
             self.class_names = labels.cat.categories
-            labels_df = pd.DataFrame(labels.cat.codes, dtype=np.int8)  # int8-32 gives an error when using nn.CrossEntropyLoss
+            labels_df = pd.DataFrame(labels.cat.codes,
+                                     dtype=np.int8)  # int8-32 gives an error when using nn.CrossEntropyLoss
         else:  # e.g. imputation
             try:
-                data = load_data.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
-                                                                     replace_missing_vals_with='NaN')
+                data = utils.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
+                                                           replace_missing_vals_with='NaN')
                 if isinstance(data, tuple):
                     df, labels = data
                 else:
                     df = data
             except:
                 df, _ = utils.load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
-                                                                 replace_missing_vals_with='NaN')
+                                                            replace_missing_vals_with='NaN')
             labels_df = None
 
-        lengths = df.applymap(lambda x: len(x)).values  # (num_samples, num_dimensions) array containing the length of each series
+        lengths = df.applymap(lambda x: len(
+            x)).values  # (num_samples, num_dimensions) array containing the length of each series
         horiz_diffs = np.abs(lengths - np.expand_dims(lengths[:, 0], -1))
 
         # most general check: len(np.unique(lengths.values)) > 1:  # returns array of unique lengths of sequences
         if np.sum(horiz_diffs) > 0:  # if any row (sample) has varying length across dimensions
-            logger.warning("Not all time series dimensions have same length - will attempt to fix by subsampling first dimension...")
+            logger.warning(
+                "Not all time series dimensions have same length - will attempt to fix by subsampling first dimension...")
             df = df.applymap(subsample)  # TODO: this addresses a very specific case (PPGDalia)
 
         if self.config['subsample_factor']:
-            df = df.applymap(lambda x: subsample(x, limit=0, factor=self.config['subsample_factor']))
+            df = df.applymap(
+                lambda x: subsample(x, limit=0, factor=self.config['subsample_factor']))
 
         lengths = df.applymap(lambda x: len(x)).values
         vert_diffs = np.abs(lengths - np.expand_dims(lengths[0, :], 0))
         if np.sum(vert_diffs) > 0:  # if any column (dimension) has varying length across samples
             self.max_seq_len = int(np.max(lengths[:, 0]))
-            logger.warning("Not all samples have same length: maximum length set to {}".format(self.max_seq_len))
+            logger.warning("Not all samples have same length: maximum length set to {}".format(
+                self.max_seq_len))
         else:
             self.max_seq_len = lengths[0, 0]
 
         # First create a (seq_len, feat_dim) dataframe for each sample, indexed by a single integer ("ID" of the sample)
         # Then concatenate into a (num_samples * seq_len, feat_dim) dataframe, with multiple rows corresponding to the
         # sample index (i.e. the same scheme as all datasets in this project)
-        df = pd.concat((pd.DataFrame({col: df.loc[row, col] for col in df.columns}).reset_index(drop=True).set_index(
-            pd.Series(lengths[row, 0]*[row])) for row in range(df.shape[0])), axis=0)
+        df = pd.concat((pd.DataFrame({col: df.loc[row, col] for col in df.columns}).reset_index(
+            drop=True).set_index(
+            pd.Series(lengths[row, 0] * [row])) for row in range(df.shape[0])), axis=0)
 
         # Replace NaN values
         grp = df.groupby(by=df.index)
@@ -348,7 +358,8 @@ class PMUData(BaseData):
             defined.
     """
 
-    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None, config=None):
+    def __init__(self, root_dir, file_list=None, pattern=None, n_proc=1, limit_size=None,
+                 config=None):
 
         self.set_num_processes(n_proc=n_proc)
 
@@ -368,8 +379,9 @@ class PMUData(BaseData):
 
         self.all_df = self.all_df.set_index('ExID')
         # rename columns
-        self.all_df.columns = [re.sub(r'\d+', str(i//3), col_name) for i, col_name in enumerate(self.all_df.columns[:])]
-        #self.all_df.columns = ["_".join(col_name.split(" ")[:-1]) for col_name in self.all_df.columns[:]]
+        self.all_df.columns = [re.sub(r'\d+', str(i // 3), col_name) for i, col_name in
+                               enumerate(self.all_df.columns[:])]
+        # self.all_df.columns = ["_".join(col_name.split(" ")[:-1]) for col_name in self.all_df.columns[:]]
         self.all_IDs = self.all_df.index.unique()  # all sample (session) IDs
 
         if limit_size is not None:
@@ -416,7 +428,9 @@ class PMUData(BaseData):
         if self.n_proc > 1:
             # Load in parallel
             _n_proc = min(self.n_proc, len(input_paths))  # no more than file_names needed here
-            logger.info("Loading {} datasets files using {} parallel processes ...".format(len(input_paths), _n_proc))
+            logger.info(
+                "Loading {} datasets files using {} parallel processes ...".format(len(input_paths),
+                                                                                   _n_proc))
             with Pool(processes=_n_proc) as pool:
                 all_df = pd.concat(pool.map(PMUData.load_single, input_paths))
         else:  # read 1 file at a time
@@ -427,7 +441,7 @@ class PMUData(BaseData):
     @staticmethod
     def load_single(filepath):
         df = PMUData.read_data(filepath)
-        #df = PMUData.select_columns(df)
+        # df = PMUData.select_columns(df)
         num_nan = df.isna().sum().sum()
         if num_nan > 0:
             logger.warning("{} nan values in {} will be replaced by 0".format(num_nan, filepath))
