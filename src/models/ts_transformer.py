@@ -1,10 +1,11 @@
-from typing import Optional, Any
 import math
+from typing import Optional
 
 import torch
 from torch import nn, Tensor
 from torch.nn import functional as F
-from torch.nn.modules import MultiheadAttention, Linear, Dropout, BatchNorm1d, TransformerEncoderLayer
+from torch.nn.modules import MultiheadAttention, Linear, Dropout, BatchNorm1d, \
+    TransformerEncoderLayer
 
 
 def model_factory(config, data):
@@ -21,10 +22,11 @@ def model_factory(config, data):
 
     if (task == "imputation") or (task == "transduction"):
         if config['model'] == 'LINEAR':
-            return DummyTSTransformerEncoder(feat_dim, max_seq_len, config['d_model'], config['num_heads'],
-                                             config['num_layers'], config['dim_feedforward'], dropout=config['dropout'],
-                                             pos_encoding=config['pos_encoding'], activation=config['activation'],
-                                             norm=config['normalization_layer'], freeze=config['freeze'])
+            # return DummyTSTransformerEncoder(feat_dim, max_seq_len, config['d_model'], config['num_heads'],
+            #                                  config['num_layers'], config['dim_feedforward'], dropout=config['dropout'],
+            #                                  pos_encoding=config['pos_encoding'], activation=config['activation'],
+            #                                  norm=config['normalization_layer'], freeze=config['freeze'])
+            ...
         elif config['model'] == 'transformer':
             return TSTransformerEncoder(feat_dim, max_seq_len, config['d_model'], config['num_heads'],
                                         config['num_layers'], config['dim_feedforward'], dropout=config['dropout'],
@@ -34,13 +36,14 @@ def model_factory(config, data):
     if (task == "classification") or (task == "regression"):
         num_labels = len(data.class_names) if task == "classification" else data.labels_df.shape[1]  # dimensionality of labels
         if config['model'] == 'LINEAR':
-            return DummyTSTransformerEncoderClassiregressor(feat_dim, max_seq_len, config['d_model'],
-                                                            config['num_heads'],
-                                                            config['num_layers'], config['dim_feedforward'],
-                                                            num_classes=num_labels,
-                                                            dropout=config['dropout'], pos_encoding=config['pos_encoding'],
-                                                            activation=config['activation'],
-                                                            norm=config['normalization_layer'], freeze=config['freeze'])
+            # return DummyTSTransformerEncoderClassiregressor(feat_dim, max_seq_len, config['d_model'],
+            #                                                 config['num_heads'],
+            #                                                 config['num_layers'], config['dim_feedforward'],
+            #                                                 num_classes=num_labels,
+            #                                                 dropout=config['dropout'], pos_encoding=config['pos_encoding'],
+            #                                                 activation=config['activation'],
+            #                                                 norm=config['normalization_layer'], freeze=config['freeze'])
+            ...
         elif config['model'] == 'transformer':
             return TSTransformerEncoderClassiregressor(feat_dim, max_seq_len, config['d_model'],
                                                         config['num_heads'],
