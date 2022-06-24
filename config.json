@@ -6,7 +6,7 @@
   "output_dir": "/home/tim/IM/data/mvts_transformer_experiments",
   "name": "First Try",
   "data_dir": "/home/tim/IM/data/ts_files",
-  "pattern": "VAL",
+  "pattern": "TRAIN",
   "val_pattern": "TEST",
   "key_metric": "accuracy",
   "data_class": "tsra",
