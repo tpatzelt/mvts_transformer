@@ -1,6 +1,6 @@
 {
   "task": "classification",
-  "max_seq_len": 300,
+  "max_seq_len": 1800,
   "model": "transformer",
   "freeze": false,
   "output_dir": "drive/MyDrive/drowsiness_data/mvts_results/10sec/",
@@ -11,9 +11,9 @@
   "key_metric": "accuracy",
   "data_class": "tsra",
   "val_ratio": 0,
-  "epochs": 1,
+  "epochs": 400,
   "lr": 0.001,
   "optimizer": "RAdam",
   "pos_encoding": "learnable",
-  "records_file": "drive/MyDrive/drowsiness_data/10sec/Classification_records.xls"
+  "records_file": "drive/MyDrive/drowsiness_data/mvts_results/10sec/Classification_records.xls"
 }
