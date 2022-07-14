@@ -3,13 +3,17 @@
   "max_seq_len": 300,
   "model": "transformer",
   "freeze": false,
-  "output_dir": "/home/tim/IM/data/mvts_transformer_experiments",
+  "output_dir": "drive/MyDrive/drowsiness_data/mvts_results/10sec/",
   "name": "First Try",
-  "data_dir": "/home/tim/IM/data/ts_files",
+  "data_dir": "drive/MyDrive/drowsiness_data/10sec/ts_files/",
   "pattern": "TRAIN",
   "val_pattern": "TEST",
   "key_metric": "accuracy",
   "data_class": "tsra",
   "val_ratio": 0,
-  "epochs": 1
+  "epochs": 1,
+  "lr": 0.001,
+  "optimizer": "RAdam",
+  "pos_encoding": "learnable",
+  "records_file": "drive/MyDrive/drowsiness_data/10sec/Classification_records.xls"
 }
