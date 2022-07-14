@@ -5,7 +5,7 @@
   "freeze": false,
   "output_dir": "drive/MyDrive/drowsiness_data/mvts_results/10sec/",
   "name": "First Try",
-  "data_dir": "drive/MyDrive/drowsiness_data/10sec/ts_files/",
+  "data_dir": "drive/MyDrive/drowsiness_data/60sec/ts_files/",
   "pattern": "TRAIN",
   "val_pattern": "TEST",
   "key_metric": "accuracy",
