@@ -3,7 +3,7 @@
   "max_seq_len": 1800,
   "model": "transformer",
   "freeze": false,
-  "output_dir": "drive/MyDrive/drowsiness_data/mvts_results/10sec/",
+  "output_dir": "drive/MyDrive/drowsiness_data/mvts_results/60sec/",
   "name": "First Try",
   "data_dir": "drive/MyDrive/drowsiness_data/60sec/ts_files/",
   "pattern": "TRAIN",
@@ -15,5 +15,5 @@
   "lr": 0.001,
   "optimizer": "RAdam",
   "pos_encoding": "learnable",
-  "records_file": "drive/MyDrive/drowsiness_data/mvts_results/10sec/Classification_records.xls"
+  "records_file": "drive/MyDrive/drowsiness_data/mvts_results/60sec/Classification_records.xls"
 }
