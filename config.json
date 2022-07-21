@@ -16,5 +16,5 @@
   "optimizer": "RAdam",
   "pos_encoding": "learnable",
   "records_file": "drive/MyDrive/drowsiness_data/mvts_results/60sec/Classification_records.xls",
-  "batch_size": 32
+  "batch_size": 16
 }
