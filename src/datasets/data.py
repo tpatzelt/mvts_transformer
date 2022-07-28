@@ -232,11 +232,11 @@ class TSRegressionArchive(BaseData):
 
         self.all_df, self.labels_df = self.load_all(root_dir, file_list=file_list, pattern=pattern)
         self.all_IDs = self.all_df.index.unique()  # all sample IDs (integer indices 0 ... num_samples-1)
-        # print('DTYPES')
-        # print(self.all_df.dtypes)
-        # self.all_df.astype('float32', copy=False)
-        # print('-->')
-        # print(self.all_df.dtypes)
+        print('DTYPES')
+        print(self.all_df.dtypes)
+        self.all_df.astype('float32', copy=False)
+        print('-->')
+        print(self.all_df.dtypes)
 
 
         if limit_size is not None:
